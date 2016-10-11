@@ -19,7 +19,7 @@ public class Servidor extends Thread
 			while (true) 
 			{
 				client = server.accept();
-				System.out.println("Nova conex√£o com o cliente " +
+				System.out.println("Nova conex„o com o cliente " +
 				client.getInetAddress().getHostAddress());
 				
 				DataInputStream ent = new DataInputStream(
