@@ -7,6 +7,26 @@ public class Board {
 		this.colSize = colSize;
 		
 		slots = new Slot[linSize][colSize];
+		
+		for(int i = 0; i < linSize; i++)
+		{
+			for(int j = 0; j < colSize; j++)
+			{
+				slots[i][j] = new Slot();
+			}
+		}
+	}
+	
+	public void printBoard()
+	{
+		for(int i = 0; i < linSize; i++)
+		{
+			for(int j = 0; j < colSize; j++)
+			{
+				System.out.print(slots[i][j].get + " ");
+			}
+			System.out.println();
+		}
 	}
 	
 	public Slot getSlot(int lin, int col)

@@ -5,14 +5,19 @@ public class Slot {
 		hasMine = false;
 	}
 	
-	public void setMinesAround()
+	public void setMinesAround(int num)
 	{
-		
+		minesAround = num;
 	}
 	
 	public void setAsMine()
 	{
-		this.hasMine = true;
+		hasMine = true;
+	}
+	
+	public int getMinesAround()
+	{
+		return minesAround;
 	}
 	
 	private boolean hasMine;

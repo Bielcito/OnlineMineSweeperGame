@@ -10,6 +10,8 @@ public class Game {
 		board = new Board(linSize, colSize);
 		
 		placeMines(mineNum);
+		
+		board.printBoard();
 	}
 	
 	//returns a array with integers from 1 to number of positions on field.
@@ -28,7 +30,7 @@ public class Game {
 		{
 			//Generate random number;
 			randomNumber = random(0, numbers.length);
-			System.out.println("Rand: " + randomNumber);
+			//System.out.println("Rand: " + randomNumber);
 			
 			//Swap positions:
 			temp = numbers[i];
