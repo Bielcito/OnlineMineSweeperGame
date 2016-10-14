@@ -1,66 +1,48 @@
-import java.util.Random;
+import java.util.Scanner;
 
 public class Game {
 	
-	public Game(int linSize, int colSize, int mineNum)
+	public Game(int linSize, int colSize, int mineNum) throws Exception
 	{
-		this.linSize = linSize;
-		this.colSize = colSize;
-		
-		board = new Board(linSize, colSize);
-		
-		placeMines(mineNum);
-		
-		board.printBoard();
-	}
-	
-	//returns a array with integers from 1 to number of positions on field.
-	public int[] generateNumbers()
-	{
-		int numbers[] = new int[linSize*colSize];
-		int temp;
-		int randomNumber;
-		
-		for(int i = 0; i < numbers.length; i++)
+		if(mineNum > linSize*colSize)
 		{
-			numbers[i] = i+1;
+			throw new Exception("Número de minas maior que o número de espaços no campo.");
 		}
 		
-		for(int i = 0; i < numbers.length; i++) // do it for each number of array
+		board = new Board(linSize, colSize, mineNum);
+	}
+	
+	public void start()
+	{
+		Scanner scanner = new Scanner(System.in);
+		
+		while(true)
 		{
-			//Generate random number;
-			randomNumber = random(0, numbers.length);
-			//System.out.println("Rand: " + randomNumber);
+			System.out.print(board);
 			
-			//Swap positions:
-			temp = numbers[i];
-			numbers[i] = numbers[randomNumber];
-			numbers[randomNumber] = temp;
+			if(!(board.getRodadas() > 0))
+			{
+				System.out.println("O JOGO ACABOU! :) AGORA VAI CATAR COQUINHO");
+			}
+			
+			System.out.println("Insira o comando: ");
+			String text = scanner.nextLine();
+			if(text.matches("[1-" + board.getLinSize() + "][ ][1-" + board.getColSize() + "]"))
+			{
+				String[] command = text.split(" ");
+				board.reveal(Integer.parseInt(command[0])-1, Integer.parseInt(command[1])-1);
+			}
+			else if(text.matches("exit"))
+			{
+				scanner.close();
+				return;
+			}
+			else
+			{
+				System.out.println("Comando inválido! Tente novamente.");
+			}
 		}
-		
-		return numbers;
-	}
-	
-	public void placeMines(int mineNum)
-	{
-		int[] numbers = generateNumbers();
-		
-		for(int i = 0; i < mineNum; i++)
-		{
-			System.out.println("number: " + numbers[i]);
-			System.out.println("lin: " + numbers[i] / linSize);
-			System.out.println("col: " + numbers[i] % linSize);
-			board.getSlot(numbers[i] / linSize, numbers[i] % linSize).setAsMine();
-		}
-	}
-	
-	public int random(int low, int high)
-	{
-		Random random = new Random();
-		
-		return random.nextInt(high - low) + low;
 	}
 	
 	private Board board;
-	private int linSize, colSize;
 }

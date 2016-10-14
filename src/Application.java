@@ -5,12 +5,24 @@ public class Application {
 	Application()
 	{
 		sair = false;
-		server = new Server(12345);
+		
+		/*server = new Server(12345);
 		client = new Client(12345);
-		game = new Game(3, 3, 1);
+		server.setDaemon(false);
 		
 		server.start();
-		start();
+		*/
+		try
+		{
+			game = new Game(5, 5, 3);
+			game.start();
+		}
+		catch (Exception e) 
+		{
+			e.getMessage();
+		}
+		
+		//start();
 	}
 	
 	public Server Server()

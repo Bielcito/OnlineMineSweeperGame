@@ -1,10 +1,12 @@
+import java.util.Random;
 
-public class Board {
+public class Board{
 	
-	public Board(int linSize, int colSize)
+	public Board(int linSize, int colSize, int mineNum)
 	{
 		this.linSize = linSize;
 		this.colSize = colSize;
+		this.rodadas = linSize*colSize - mineNum;
 		
 		slots = new Slot[linSize][colSize];
 		
@@ -12,25 +14,75 @@ public class Board {
 		{
 			for(int j = 0; j < colSize; j++)
 			{
-				slots[i][j] = new Slot();
+				slots[i][j] = new Slot(i, j);
 			}
 		}
+		
+		placeMines(mineNum);
+		placeNumbers();
 	}
 	
-	public void printBoard()
+	public String toString()
+	{
+		String result = new String();
+		
+		result += "   ";
+		for(int i = 0; i < colSize; i++)
+		{
+			result += i+1 + " ";
+		}
+		result += "\n";
+		
+		for(int i = 0; i < linSize; i++)
+		{
+			result += i+1 + " ";
+			for(int j = 0; j < colSize; j++)
+			{
+				if(slots[i][j].isRevealed())
+				{
+					if(slots[i][j].getHasMine())
+					{
+						result += "|O";
+					}
+					else
+					{
+						int aux = slots[i][j].getMinesAround();
+						result += "|" + (aux > 0 ? aux : " ");
+					}
+				}
+				else
+				{
+					result += "|X";
+				}
+			}
+			result += "|\n";
+		}
+		
+		return result;
+	}
+	
+	public void revealAll()
 	{
 		for(int i = 0; i < linSize; i++)
 		{
 			for(int j = 0; j < colSize; j++)
 			{
-				System.out.print(slots[i][j].get + " ");
+				slots[i][j].reveal();
 			}
-			System.out.println();
 		}
 	}
 	
-	public Slot getSlot(int lin, int col)
+	public Slot getSlot(int lin, int col) throws Exception
 	{
+		if(lin >= linSize)
+		{
+			throw new Exception("Parâmetro lin maior que o máximo permitido.");
+		}
+		if(col >= colSize)
+		{
+			throw new Exception("Parâmetro col maior que o máximo permitido.");
+		}
+		
 		return slots[lin][col];
 	}
 	
@@ -59,8 +111,20 @@ public class Board {
 		}
 	}
 	
-	public Slot getSlot(int lin, int col, Position p)
+	public Slot getSlot(Slot slot, Position p) throws Exception
 	{
+		int lin = slot.getLin();
+		int col = slot.getCol();
+		
+		if(lin >= linSize)
+		{
+			throw new Exception("Parâmetro lin maior que o máximo permitido.");
+		}
+		if(col >= colSize)
+		{
+			throw new Exception("Parâmetro col maior que o máximo permitido.");
+		}
+		
 		switch(p)
 		{
 		case TOP_LEFT:
@@ -84,7 +148,174 @@ public class Board {
 		}
 	}
 	
+	public void placeMines(int mineNum)
+	{
+		int[] numbers = generateNumbers();
+		
+		try
+		{
+			for(int i = 0; i < mineNum; i++)
+			{
+				getSlot(numbers[i] / linSize, numbers[i] % linSize).setAsMine();
+			}
+		}
+		catch(Exception e)
+		{
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	public void placeNumbers()
+	{
+		int contador;
+		Slot pivo, aux;
+		
+		for(int i = 0; i < linSize; i++)
+		{
+			for(int j = 0; j < colSize; j++)
+			{
+				try
+				{
+					contador = 0;
+					
+					pivo = getSlot(i, j);
+					
+					for(Position p : Position.values())
+					{
+						aux = getSlot(pivo, p);
+						if(aux != null && aux.getHasMine())
+						{
+							contador++;
+						}
+					}
+					
+					pivo.setMinesAround(contador);
+				}
+				catch(Exception e)
+				{
+					System.out.println(e.getMessage());
+				}
+			}
+		}
+	}
+	
+	//returns a array with integers from 1 to number of positions on field.
+	public int[] generateNumbers()
+	{
+		int numbers[] = new int[linSize*colSize];
+		int temp;
+		int randomNumber;
+		
+		for(int i = 0; i < numbers.length; i++)
+		{
+			numbers[i] = i;
+		}
+		
+		for(int i = 0; i < numbers.length; i++) // do it for each number of array
+		{
+			//Generate random number;
+			randomNumber = random(0, numbers.length);
+			//System.out.println("Rand: " + randomNumber);
+			
+			//Swap positions:
+			temp = numbers[i];
+			numbers[i] = numbers[randomNumber];
+			numbers[randomNumber] = temp;
+		}
+		
+		return numbers;
+	}
+	
+	public int random(int low, int high)
+	{
+		Random random = new Random();
+		
+		return random.nextInt(high - low) + low;
+	}
+	
+	public void reveal(int lin, int col)
+	{
+		try
+		{
+			Slot aux = getSlot(lin, col);
+			if(aux != null)
+			{
+				if(!aux.isRevealed())
+				reveal(aux, false);
+			}
+		}
+		catch(Exception e)
+		{
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	private void reveal(Slot slot, boolean terminal)
+	{
+		try
+		{
+			slot.reveal();
+			rodadas--;
+			
+			if(slot.getHasMine())
+			{
+				System.out.println("VOCÊ PERDEU!");
+				revealAll();
+				rodadas = 0;
+				return;
+			}
+			else if(slot.getMinesAround() > 0)
+			{
+				return;
+			}
+			
+			if(!terminal)
+			{
+				Position[] nearest = {Position.TOP, Position.BOTTOM, Position.LEFT, Position.RIGHT};
+				Slot aux;
+				for(int i = 0; i < nearest.length; i++)
+				{
+					aux = getSlot(slot, nearest[i]);
+					if(aux != null && !aux.isRevealed())
+					{
+						if(aux.getHasMine())
+						{
+							return;
+						}
+						else if(aux.getMinesAround() > 0)
+						{
+							reveal(aux, true);
+						}
+						else
+						{
+							reveal(aux, false);
+						}
+					}
+				}
+			}
+		}
+		catch(Exception e)
+		{
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	public int getLinSize()
+	{
+		return linSize;
+	}
+	
+	public int getColSize()
+	{
+		return colSize;
+	}
+	
+	public int getRodadas()
+	{
+		return rodadas;
+	}
 
 	private Slot[][] slots;
 	private int linSize, colSize;
+	private int rodadas;
 }

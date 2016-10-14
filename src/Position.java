@@ -4,6 +4,7 @@ public enum Position {
 	       BOTTOM_LEFT(5), BOTTOM(6), BOTTOM_RIGHT(7);
 		
 		public int valor;
+		
 		Position(int valor) {
 			this.valor = valor;
 		}
