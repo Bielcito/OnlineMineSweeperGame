@@ -6,6 +6,7 @@ public class Board{
 	{
 		this.linSize = linSize;
 		this.colSize = colSize;
+		this.mineNum = mineNum;
 		this.rodadas = linSize*colSize - mineNum;
 		
 		slots = new Slot[linSize][colSize];
@@ -17,9 +18,6 @@ public class Board{
 				slots[i][j] = new Slot(i, j);
 			}
 		}
-		
-		placeMines(mineNum);
-		placeNumbers();
 	}
 	
 	public String toString()
@@ -148,10 +146,8 @@ public class Board{
 		}
 	}
 	
-	public void placeMines(int mineNum)
+	public void placeMines()
 	{
-		int[] numbers = generateNumbers();
-		
 		try
 		{
 			for(int i = 0; i < mineNum; i++)
@@ -200,9 +196,9 @@ public class Board{
 	}
 	
 	//returns a array with integers from 1 to number of positions on field.
-	public int[] generateNumbers()
+	public void generateNumbers()
 	{
-		int numbers[] = new int[linSize*colSize];
+		numbers = new int[linSize*colSize];
 		int temp;
 		int randomNumber;
 		
@@ -222,8 +218,6 @@ public class Board{
 			numbers[i] = numbers[randomNumber];
 			numbers[randomNumber] = temp;
 		}
-		
-		return numbers;
 	}
 	
 	public int random(int low, int high)
@@ -259,9 +253,8 @@ public class Board{
 			
 			if(slot.getHasMine())
 			{
-				System.out.println("VOCÊ PERDEU!");
 				revealAll();
-				rodadas = 0;
+				rodadas = -1;
 				return;
 			}
 			else if(slot.getMinesAround() > 0)
@@ -314,8 +307,27 @@ public class Board{
 	{
 		return rodadas;
 	}
+	
+	public String getNumbers()
+	{
+		String result = new String();
+		
+		for(int i = 0; i < numbers.length; i++)
+		{
+			result += numbers[i] + " ";
+		}
+		
+		return result;
+	}
+	
+	public void setNumbers(int[] numbers)
+	{
+		this.numbers = numbers;
+	}
 
 	private Slot[][] slots;
 	private int linSize, colSize;
 	private int rodadas;
+	private int mineNum;
+	private int[] numbers;
 }

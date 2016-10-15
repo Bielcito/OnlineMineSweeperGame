@@ -3,38 +3,55 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
-public class Server extends Thread 
+public class Server implements Connection
 {
 	public Server(int port)
 	{
 		this.port = port;
+		message = new ArrayList<String>();
+		connected = false;
+		
+		connect();
+	}
+	
+	public void connect()
+	{
+		try
+		{
+			server = new ServerSocket(port);
+			System.out.println("Servidor escutando a porta " + port + ".");
+		}
+		catch(IOException e)
+		{
+			System.out.println(e.getMessage());
+			close();
+		}
 	}
 	
 	public void run()
 	{
-		//Checa se a conexão já foi criada, senão, cria:
 		if(server == null)
 		{
-			createServerSocket();
+			return;
 		}
-		
 		try 
 		{
-			System.out.println("Servidor: ");
-			
 			while (true) 
 			{
-				client = server.accept();
-				System.out.println("Nova conexão com o cliente " +
-						client.getInetAddress().getHostAddress());
+				if(connected == false)
+				{
+					client = server.accept();
+					connected = true;
+					System.out.println("Nova conexão com o cliente " +
+							client.getInetAddress().getHostAddress());
+				}
 				
 				DataInputStream ent = new DataInputStream(
 						client.getInputStream()
 				);
-				message = ent.readUTF();
-				System.out.println(message);
-				sendConfirmation();
+				message.add(ent.readUTF());
 			}
 		} 
 		catch (IOException e) 
@@ -43,17 +60,41 @@ public class Server extends Thread
 		}
 	}
 	
-	public void sendConfirmation()
+	public void send(String text)
 	{
 		try
 		{
 			DataOutputStream sai = new DataOutputStream(
 			client.getOutputStream());
-			sai.writeUTF("Foi");
+			sai.writeUTF(text);
 		}
 		catch(IOException e)
 		{
 			System.out.println(e.getMessage());
+		}
+	}
+	
+	public synchronized String receive()
+	{
+		while(true)
+		{
+			if(message.size() > 0)
+			{
+				String mensagem = message.get(0);
+				message.remove(0);
+				System.out.println("Recebendo: " + mensagem);
+				return mensagem;
+			}
+			else
+			{
+				System.out.println(".");
+				try {
+					wait(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 	
@@ -70,23 +111,15 @@ public class Server extends Thread
 		}
 	}
 	
-	public void createServerSocket()
+	public boolean isConnected()
 	{
-		try
-		{
-			server = new ServerSocket(port);
-			System.out.println(" Servidor na porta " + port);
-		}
-		catch(IOException e)
-		{
-			System.out.println(e.getMessage());
-			
-		}
+		return connected;
 	}
 
 	private int port;
 	private ServerSocket server;
 	private Socket client;
+	private boolean connected;
 	int valor;
-	String message;
+	ArrayList<String> message;
 }

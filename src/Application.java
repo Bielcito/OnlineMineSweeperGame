@@ -1,71 +1,37 @@
-import java.util.Scanner;
+import java.awt.Desktop;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class Application {
 	
 	Application()
-	{
-		sair = false;
-		
-		/*server = new Server(12345);
-		client = new Client(12345);
-		server.setDaemon(false);
-		
-		server.start();
-		*/
+	{		
 		try
 		{
-			game = new Game(5, 5, 3);
-			game.start();
+			String command = "java -jar C:\\Users\\Bielcito\\Documents\\Projetos\\\\\"Eclipse Projects\"\\OnlineMineSweeperGame\\src\\portmapper-2.0.0 -add -externalPort 12345 -internalPort 12345 -protocol tcp";
+			
+			/*game = new Game(5, 5, 3);
+			game.start();*/
+			ProcessBuilder builder = new ProcessBuilder(
+		            "cmd.exe", "/c", command);
+		        builder.redirectErrorStream(true);
+		        Process p = builder.start();
+		        BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		        String line;
+		        while (true) {
+		            line = r.readLine();
+		            if (line == null) { break; }
+		            System.out.println(line);
+		        }
+			
 		}
 		catch (Exception e) 
 		{
 			e.getMessage();
 		}
-		
-		//start();
 	}
 	
-	public Server Server()
-	{
-		return server;
-	}
-	
-	public Client Client()
-	{
-		return client;
-	}
-	
-	public void close()
-	{
-		client.close();
-		server.interrupt();
-		server.close();
-	}
-	
-	public void start()
-	{
-		Scanner scanner = new Scanner(System.in);
-		int valor;
-		while(!sair)
-		{
-			valor = scanner.nextInt();
-			scanner.nextLine();
-			if(valor == 1)
-			{
-				client.send(scanner.nextLine());
-			}
-			else if(valor == 2)
-			{
-				sair = true;
-			}
-		}
-		
-		scanner.close();
-		close();
-	}
-	
-	private Client client;
-	private Server server;
 	private Game game;
-	private boolean sair;
 }
