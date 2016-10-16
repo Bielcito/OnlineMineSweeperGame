@@ -1,2 +1,0 @@
-# OnlineMineSweeperGame
-Made in Java.

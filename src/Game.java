@@ -1,3 +1,5 @@
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.chrono.IsoChronology;
 import java.util.Scanner;
 
@@ -17,8 +19,6 @@ public class Game {
 	
 	public void connectState()
 	{
-		Scanner scanner = new Scanner(System.in);
-		
 		System.out.println("Bem vindo ao MineSweeper Online!");
 		System.out.println("Selecione uma opção:");
 		System.out.println("1- Criar uma Sala.");
@@ -30,37 +30,16 @@ public class Game {
 		{
 			if(escolha.equals("1"))
 			{
-				connection = new Server(12345);
-				Thread t = new Thread(connection);
+				connection = new Server();
+				t = new Thread(connection);
 				t.start();
 				waitForClient();
 			}
 			else if(escolha.equals("2"))
 			{
-				connection = new Client(12345);
-				Thread t = new Thread(connection);
+				connection = new Client();
+				t = new Thread(connection);
 				t.start();
-			}
-		}
-	}
-	
-	public synchronized void waitForClient()
-	{
-		Scanner scanner = new Scanner(System.in);
-		while(true)
-		{
-			if(!connection.isConnected())
-			{
-				try {
-					wait(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-			else
-			{
-				System.out.println("Conectado!");
-				break;
 			}
 		}
 	}
@@ -128,41 +107,77 @@ public class Game {
 		}
 	}
 	
+	public boolean gameIsFinished()
+	{
+		if(myturn)
+		{
+			if(board.getRodadas() == 0)
+			{
+				System.out.println("Parece que vocês dois são inteligentes! EMPATE!");
+				return true;
+			}
+			else if(board.getRodadas() < 0)
+			{
+				System.out.println("O seu inimigo explodiu. Você VENCEU!");
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			if(board.getRodadas() == 0)
+			{
+				System.out.println("Parece que vocês dois são inteligentes! EMPATE!");
+				return true;
+			}
+			else if(board.getRodadas() < 0)
+			{
+				System.out.println("OPS! Você explodiu, que pena. Você PERDEU!");
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+	}
+	
 	public void playState()
 	{
 		while(true)
 		{
 			System.out.print(board);
 			
-			if(board.getRodadas() == 0)
+			if(gameIsFinished())
 			{
-				System.out.println("VOCÊ VENCEU! :) AGORA VAI CATAR COQUINHO");
-				break;
-			}
-			else if(board.getRodadas() < 0)
-			{
-				System.out.println("VOCÊ PERDEU! >:( AGORA XÔ DAQUI CARNIÇA.");
-				break;
+				return;
 			}
 			
 			if(myturn)
 			{
-				System.out.println("Insira o comando: ");
-				String text = scanner.nextLine();
-				if(text.matches("[1-" + board.getLinSize() + "][ ][1-" + board.getColSize() + "]"))
+				while(true)
 				{
-					String[] command = text.split(" ");
-					board.reveal(Integer.parseInt(command[0])-1, Integer.parseInt(command[1])-1);
-					connection.send(text);
-				}
-				else if(text.matches("exit"))
-				{
-					scanner.close();
-					return;
-				}
-				else
-				{
-					System.out.println("Comando inválido! Tente novamente.");
+					System.out.println("Insira um comando: ");
+					String text = scanner.nextLine();
+					if(text.matches("[1-" + board.getLinSize() + "][ ][1-" + board.getColSize() + "]"))
+					{
+						String[] command = text.split(" ");
+						board.reveal(Integer.parseInt(command[0])-1, Integer.parseInt(command[1])-1);
+						connection.send(text);
+						break;
+					}
+					else if(text.matches("exit"))
+					{
+						scanner.close();
+						return;
+					}
+					else
+					{
+						System.out.println("Comando inválido! Tente novamente.");
+					}
 				}
 			}
 			else
@@ -204,9 +219,35 @@ public class Game {
 		}
 	}
 	
+	public synchronized void waitForClient()
+	{
+		System.out.println("Esperando o outro jogador entrar..."); 
+		while(true)
+		{
+			if(!connection.isConnected())
+			{
+				try {
+					wait(1000);
+				} catch (InterruptedException e) {
+					System.out.println(e.getMessage());
+				}
+			}
+			else
+			{
+				System.out.println("Conectado!");
+				break;
+			}
+		}
+	}
+	
 	public void start()
 	{
 		connectState();
+		
+		if(connection.isConnected() == false)
+		{
+			return;
+		}
 		
 		turnState();
 		
@@ -215,6 +256,7 @@ public class Game {
 		playState();
 	}
 	
+	Thread t;
 	private Board board;
 	private Connection connection;
 	private boolean myturn;

@@ -5,4 +5,5 @@ interface Connection extends Runnable{
 	abstract void send(String text);
 	abstract String receive();
 	abstract boolean isConnected();
+	abstract void close();
 }

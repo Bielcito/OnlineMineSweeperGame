@@ -4,59 +4,103 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Server implements Connection
 {
-	public Server(int port)
+	public Server()
 	{
-		this.port = port;
 		message = new ArrayList<String>();
 		connected = false;
+		scanner = new Scanner(System.in);
 		
 		connect();
 	}
 	
 	public void connect()
 	{
-		try
+		while(true)
 		{
-			server = new ServerSocket(port);
-			System.out.println("Servidor escutando a porta " + port + ".");
-		}
-		catch(IOException e)
-		{
-			System.out.println(e.getMessage());
-			close();
+			try
+			{
+				System.out.println("Criando a sala...");
+				server = new ServerSocket(UPnP.internal);
+			}
+			catch(IOException e)
+			{
+				System.out.println(e.getMessage());
+			}
+			
+			if(server == null)
+			{
+				System.out.println("Não foi possível criar a sala. Gostaria de tentar novamente?");
+				System.out.println("1- Sim.");
+				System.out.println("2- Não.");
+				
+				String escolha = scanner.nextLine();
+				
+				if(escolha.matches("[1-2]"))
+				{
+					if(escolha.equals("1"))
+					{
+						if(UPnP.hasUPnP)
+						{
+							UPnP.deletePortMapping();
+							UPnP.internal++;
+							UPnP.external++;
+							UPnP.createNewPortMapping();
+						}
+						else
+						{
+							UPnP.internal++;
+						}
+					}
+					if(escolha.equals("2"))
+					{
+						System.out.println("Programa terminado.");
+						break;
+					}
+				}
+				else
+				{
+					System.out.println("Comando inválido! Tente novamente.");
+				}
+			}
+			else
+			{
+				System.out.println("Sala criada.");
+				break;
+			}
 		}
 	}
 	
 	public void run()
 	{
-		if(server == null)
+		if(connected == false)
 		{
-			return;
-		}
-		try 
-		{
-			while (true) 
+			try 
 			{
-				if(connected == false)
+				client = server.accept();
+				connected = true;
+				System.out.println("Nova conexão com o cliente " +
+					client.getInetAddress().getHostAddress());
+				while (true) 
 				{
-					client = server.accept();
-					connected = true;
-					System.out.println("Nova conexão com o cliente " +
-							client.getInetAddress().getHostAddress());
+					try {
+						DataInputStream ent = new DataInputStream(
+								client.getInputStream()
+						);
+						message.add(ent.readUTF());
+					} catch (IOException e) {
+						System.out.println(e.getMessage());
+					}
 				}
-				
-				DataInputStream ent = new DataInputStream(
-						client.getInputStream()
-				);
-				message.add(ent.readUTF());
 			}
-		} 
-		catch (IOException e) 
-		{
-			System.out.println("Erro na escuta: " + e.getMessage());
+			catch(IOException e)
+			{
+				System.out.println(e.getMessage());
+				return;
+			}
 		}
 	}
 	
@@ -87,7 +131,6 @@ public class Server implements Connection
 			}
 			else
 			{
-				System.out.println(".");
 				try {
 					wait(1000);
 				} catch (InterruptedException e) {
@@ -100,10 +143,17 @@ public class Server implements Connection
 	
 	public void close()
 	{
+		connected = false;
 		try
 		{
-			server.close();
-			client.close();
+			if(server != null)
+			{
+				server.close();
+			}
+			if(client != null)
+			{
+				client.close();
+			}
 		}
 		catch(IOException e)
 		{
@@ -116,10 +166,10 @@ public class Server implements Connection
 		return connected;
 	}
 
-	private int port;
 	private ServerSocket server;
 	private Socket client;
 	private boolean connected;
 	int valor;
 	ArrayList<String> message;
+	Scanner scanner;
 }

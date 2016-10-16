@@ -3,12 +3,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Client implements Connection
 {
-	public Client(int port)
+	public Client()
 	{
-		this.port = port;
 		message = new ArrayList<String>();
 		
 		connect();
@@ -16,21 +16,50 @@ public class Client implements Connection
 	
 	public void connect()
 	{
-		if(client != null)
+		while(true)
 		{
-			connected = true;
-		}
-		try
-		{
-			System.out.println("Cliente: ");
-			client = new Socket("127.0.0.1", port);
-			System.out.println("O cliente se conectou ao servidor!");
-			connected = true;
-		}
-		catch(IOException e)
-		{
-			System.out.println(e.getMessage());
-			connected = false;
+			try
+			{
+				System.out.println("Tentando conectar na sala...");
+				client = new Socket("127.0.0.1", UPnP.internal);
+				System.out.println("Conexão bem sucedida!");
+				connected = true;
+			}
+			catch(IOException e)
+			{
+				System.out.println(e.getMessage());
+				connected = false;
+			}
+			
+			if(connected == false)
+			{	
+				System.out.println("Não foi possível realizar a conexão. Gostaria de tentar novamente?");
+				System.out.println("1- Sim.");
+				System.out.println("2- Não.");
+				
+				scanner = new Scanner(System.in);
+				String command = scanner.nextLine();
+				if(command.matches("[1-2]"))
+				{
+					if(command.equals("1"))
+					{
+						UPnP.internal++;
+					}
+					else if(command.equals("2"))
+					{
+						System.out.println("Programa terminado.");
+						break;
+					}
+				}
+				else
+				{
+					System.out.println("Comando inválido! Use comandos entre 1 e 2.");
+				}
+			}
+			else
+			{
+				break;
+			}
 		}
 	}
 	
@@ -60,7 +89,6 @@ public class Client implements Connection
 			}
 			else
 			{
-				System.out.println(".");
 				try {
 					wait(1000);
 				} catch (InterruptedException e) {
@@ -75,7 +103,10 @@ public class Client implements Connection
 	{
 		try
 		{
-			client.close();
+			if(client != null)
+			{
+				client.close();
+			}
 		}
 		catch(IOException e)
 		{
@@ -87,10 +118,8 @@ public class Client implements Connection
 	{
 		if(client == null)
 		{
-			connect();
+			return;
 		}
-		
-		System.out.println("Cliente esperando o servidor enviar algo:");
 		
 		while(true)
 		{
@@ -111,8 +140,8 @@ public class Client implements Connection
 		return connected;
 	}
 	
+	private Scanner scanner;
 	private boolean connected;
 	private Socket client;
-	private int port;
 	private ArrayList<String> message;
 }
