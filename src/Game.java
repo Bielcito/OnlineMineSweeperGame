@@ -19,27 +19,36 @@ public class Game {
 	
 	public void connectState()
 	{
-		System.out.println("Bem vindo ao MineSweeper Online!");
-		System.out.println("Selecione uma opção:");
-		System.out.println("1- Criar uma Sala.");
-		System.out.println("2- Entrar em uma Sala.");
-		
-		String escolha = scanner.nextLine();
-		
-		if(escolha.matches("[1-2]"))
+		while(true)
 		{
-			if(escolha.equals("1"))
+			System.out.println("Bem vindo ao MineSweeper Online!");
+			System.out.println("Selecione uma opção:");
+			System.out.println("1- Criar uma Sala.");
+			System.out.println("2- Entrar em uma Sala.");
+			
+			String escolha = scanner.nextLine();
+			
+			if(escolha.matches("[1-2]"))
 			{
-				connection = new Server();
-				t = new Thread(connection);
-				t.start();
-				waitForClient();
+				if(escolha.equals("1"))
+				{
+					connection = new Server();
+					t = new Thread(connection);
+					t.start();
+					waitForClient();
+					break;
+				}
+				else if(escolha.equals("2"))
+				{
+					connection = new Client();
+					t = new Thread(connection);
+					t.start();
+					break;
+				}
 			}
-			else if(escolha.equals("2"))
+			else
 			{
-				connection = new Client();
-				t = new Thread(connection);
-				t.start();
+				System.out.println("Comando inválido! Digite um número entre 1 e 2.");
 			}
 		}
 	}
@@ -68,19 +77,38 @@ public class Game {
 				eu = Integer.parseInt(escolha);
 				if(eu == 1)
 				{
+					System.out.println("Você escolheu Pedra.");
 					connection.send("1");
 				}
 				else if(eu == 2)
 				{
+					System.out.println("Você escolheu Papel.");
 					connection.send("2");
 				}
-				else
+				else if(eu == 3)
 				{
+					System.out.println("Você escolheu Tesoura.");
 					connection.send("3");
 				}
 				
 				//Pega o comando do outro:
 				ele = Integer.parseInt(connection.receive());
+				if(ele == 1)
+				{
+					System.out.println("O outro jogador escolheu Pedra.");
+				}
+				else if(ele == 2)
+				{
+					System.out.println("O outro jogador escolheu Papel.");
+				}
+				else if(ele == 3)
+				{
+					System.out.println("O outro jogador escolheu Tesoura.");
+				}
+				else
+				{
+					System.out.println("Erro fatal na escolha do primeiro jogador.");
+				}
 				
 				if(eu == ele)
 				{
@@ -158,6 +186,7 @@ public class Game {
 			
 			if(myturn)
 			{
+				System.out.println("\"help\" para saber como jogar, e \"exit\" para sair do jogo.");
 				while(true)
 				{
 					System.out.println("Insira um comando: ");
@@ -173,6 +202,16 @@ public class Game {
 					{
 						scanner.close();
 						return;
+					}
+					else if(text.matches("help"))
+					{
+						System.out.println("Para jogar, escolha uma linha e uma coluna por seu número.");
+						System.out.println("Para escrever o comando, digite os dois números correspondentes em ordem e separados por um único espaço.");
+						System.out.println("Após isso, tecle ENTER para enviar o comando.");
+						System.out.println("Seu objetivo é revelar um espaço que não possua nenhuma mina escondida.");
+						System.out.println("Observe atentamente nos espaços já revelados, pois alguns trazem uma dica. O número de um espaço indica quantas minas existem ao seu redor!");
+						System.out.println("Os jogadores alternam entre si, e perde quem revelar uma mina. Caso todo o terreno seja revelado e só hajam minas, será declarado um empate.");
+						System.out.println("Boa sorte, e bom jogo!");
 					}
 					else
 					{

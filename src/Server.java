@@ -29,6 +29,7 @@ public class Server implements Connection
 			catch(IOException e)
 			{
 				System.out.println(e.getMessage());
+				break;
 			}
 			
 			if(server == null)
@@ -93,6 +94,7 @@ public class Server implements Connection
 						message.add(ent.readUTF());
 					} catch (IOException e) {
 						System.out.println(e.getMessage());
+						break;
 					}
 				}
 			}
@@ -126,7 +128,6 @@ public class Server implements Connection
 			{
 				String mensagem = message.get(0);
 				message.remove(0);
-				System.out.println("Recebendo: " + mensagem);
 				return mensagem;
 			}
 			else
@@ -134,11 +135,13 @@ public class Server implements Connection
 				try {
 					wait(1000);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
+					break;
 				}
 			}
 		}
+		
+		return "";
 	}
 	
 	public void close()

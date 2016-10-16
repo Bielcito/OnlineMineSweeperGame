@@ -29,6 +29,7 @@ public class Client implements Connection
 			{
 				System.out.println(e.getMessage());
 				connected = false;
+				break;
 			}
 			
 			if(connected == false)
@@ -84,7 +85,6 @@ public class Client implements Connection
 			{
 				String mensagem = message.get(0);
 				message.remove(0);
-				System.out.println("Recebendo: " + mensagem);
 				return mensagem;
 			}
 			else
@@ -131,6 +131,7 @@ public class Client implements Connection
 			catch(IOException e)
 			{
 				System.out.println(e.getMessage());
+				break;
 			}
 		}
 	}
